@@ -1,0 +1,6 @@
+<img data-slot="avatar-image" title="Avatar image" [attr.title]="alt || 'Avatar image'" [ngClass]="classes"
+    [src]="src || null" [alt]="alt" />
+
+<!-- React-only original: <AvatarPrimitive.Image ... /> -->
+<!-- React-only original: className={cn(...)} foi migrado para [ngClass] com montagem no avatar-image.ts -->
+<!-- React-only original: {...props} nao possui equivalente direto no template Angular -->

@@ -1,0 +1,6 @@
+<div *ngIf="isOpen" data-slot="alert-dialog-overlay" [ngClass]="classes" [attr.data-state]="isOpen ? 'open' : 'closed'">
+</div>
+
+<!-- React-only original: <AlertDialogPrimitive.Overlay ... /> -->
+<!-- React-only original: className={cn(...)} foi migrado para [ngClass] com montagem no alert-dialog-overlay.ts -->
+<!-- React-only original: {...props} nao possui equivalente direto no template Angular -->

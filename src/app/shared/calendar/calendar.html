@@ -1,0 +1,48 @@
+<div [ngClass]="rootClasses">
+  <div [ngClass]="monthsClasses">
+    <div [ngClass]="monthClasses">
+      <div [ngClass]="captionClasses">
+        <div [ngClass]="navClasses">
+          <button type="button" title="Previous month" [ngClass]="previousNavButtonClasses" (click)="previousMonth()">
+            <span class="size-4" aria-hidden="true">&lt;</span>
+          </button>
+          <button type="button" title="Next month" [ngClass]="nextNavButtonClasses" (click)="nextMonth()">
+            <span class="size-4" aria-hidden="true">&gt;</span>
+          </button>
+        </div>
+        <div [ngClass]="captionLabelClasses">{{ monthLabel }}</div>
+      </div>
+
+      <table [ngClass]="tableClasses">
+        <thead>
+          <tr [ngClass]="headRowClasses">
+            @for (weekday of weekdays; track weekday) {
+            <th [ngClass]="headCellClasses">{{ weekday }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (week of weeks; track $index) {
+          <tr [ngClass]="rowClasses">
+            @for (day of week; track day.date.toISOString()) {
+            <td [ngClass]="getCellClasses(day)">
+              <button type="button" [ngClass]="getDayClasses(day)" [disabled]="day.disabled || day.hidden"
+                [attr.aria-selected]="isSelected(day.date)" [class.day-range-start]="isRangeStart(day.date)"
+                [class.day-range-end]="isRangeEnd(day.date)" (click)="selectDay(day)">
+                {{ day.label }}
+              </button>
+            </td>
+            }
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- React-only original: "use client" -->
+<!-- React-only original: react-day-picker DayPicker foi substituido por implementacao Angular local -->
+<!-- React-only original: buttonVariants e classNames do DayPicker foram mapeados para getters e inputs no calendar.ts -->
+<!-- React-only original: components.IconLeft e components.IconRight de react-day-picker foram substituidos por fallback textual -->
+<!-- React-only original: props spread do React nao possui equivalente direto no template Angular -->

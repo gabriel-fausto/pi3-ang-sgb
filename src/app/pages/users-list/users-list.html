@@ -1,0 +1,105 @@
+<app-layout>
+  <div class="space-y-6">
+    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-foreground mb-2">Gerenciar Usuários</h1>
+        <p class="text-[#718096]">Visualize e gerencie todos os usuários do sistema</p>
+      </div>
+      <!-- React-only original: Link do react-router virou [routerLink] no template Angular -->
+      <a routerLink="/users/new">
+        <app-button variant="primary">Cadastrar Novo Usuário</app-button>
+      </a>
+    </header>
+
+    <!-- Filters Section -->
+    <section aria-label="Filtros de pesquisa">
+      <app-card>
+        <app-card-content className="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="md:col-span-2">
+              <div class="relative">
+                <lucide-icon [img]="iconSearch"
+                  class="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#718096]" [size]="20"
+                  aria-hidden="true"></lucide-icon>
+                <app-input type="search" placeholder="Pesquisar por nome, e-mail ou CPF..." [value]="searchTerm()"
+                  (valueChange)="updateSearchTerm($event)" className="pl-10" ariaLabel="Pesquisar usuários"></app-input>
+              </div>
+            </div>
+            <app-select label="Perfil" [value]="roleFilter()" (valueChange)="updateRoleFilter($event)"
+              [options]="roleOptions"></app-select>
+            <app-select label="Status" [value]="statusFilter()" (valueChange)="updateStatusFilter($event)"
+              [options]="statusOptions"></app-select>
+          </div>
+        </app-card-content>
+      </app-card>
+    </section>
+
+    <!-- Results Section -->
+    <section aria-label="Lista de usuários">
+      <app-card padding="none">
+        <div class="p-6 border-b border-border">
+          <p class="text-[#718096]">
+            {{ filteredUsers().length }} usuário(s) encontrado(s)
+          </p>
+        </div>
+
+        <ng-container *ngIf="filteredUsers().length === 0; else usersTable">
+          <div class="py-12 text-center">
+            <p class="text-[#718096]">
+              Nenhum usuário encontrado com os critérios de pesquisa.
+            </p>
+          </div>
+        </ng-container>
+        <ng-template #usersTable>
+          <div class="overflow-x-auto">
+            <app-table>
+              <app-table-header>
+                <app-table-row>
+                  <app-table-head>Nome</app-table-head>
+                  <app-table-head>E-mail</app-table-head>
+                  <app-table-head>CPF</app-table-head>
+                  <app-table-head>Perfil</app-table-head>
+                  <app-table-head>Status</app-table-head>
+                  <app-table-head>Ações</app-table-head>
+                </app-table-row>
+              </app-table-header>
+              <app-table-body>
+                <app-table-row *ngFor="let user of filteredUsers()">
+                  <app-table-cell>
+                    <p class="font-medium">{{ user.name }}</p>
+                  </app-table-cell>
+                  <app-table-cell>{{ user.email }}</app-table-cell>
+                  <app-table-cell>
+                    <code class="text-sm">{{ user.cpf }}</code>
+                  </app-table-cell>
+                  <app-table-cell>
+                    <app-badge [variant]="getRoleVariant(user.role)">{{ getRoleLabel(user.role) }}</app-badge>
+                  </app-table-cell>
+                  <app-table-cell>
+                    <app-badge [variant]="getStatusVariant(user.status)">{{ getStatusLabel(user.status) }}</app-badge>
+                  </app-table-cell>
+                  <app-table-cell>
+                    <div class="flex items-center gap-2">
+                      <app-button variant="ghost" size="sm" [ariaLabel]="'Editar usuário ' + user.name">
+                        <lucide-icon [img]="iconEdit" [size]="16" aria-hidden="true"></lucide-icon>
+                      </app-button>
+                      <app-button *ngIf="user.status === 'ativo'; else activateUserButton" variant="ghost" size="sm"
+                        [ariaLabel]="'Inativar usuário ' + user.name">
+                        <lucide-icon [img]="iconUserX" [size]="16" aria-hidden="true"></lucide-icon>
+                      </app-button>
+                      <ng-template #activateUserButton>
+                        <app-button variant="ghost" size="sm" [ariaLabel]="'Ativar usuário ' + user.name">
+                          <lucide-icon [img]="iconUserCheck" [size]="16" aria-hidden="true"></lucide-icon>
+                        </app-button>
+                      </ng-template>
+                    </div>
+                  </app-table-cell>
+                </app-table-row>
+              </app-table-body>
+            </app-table>
+          </div>
+        </ng-template>
+      </app-card>
+    </section>
+  </div>
+</app-layout>

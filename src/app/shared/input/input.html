@@ -1,0 +1,25 @@
+<div class="w-full">
+  @if(label) {
+  <label [for]="inputId" class="block mb-2 text-gray-700 font-semibold">
+    {{ label }}
+  </label>
+  }
+  <input [id]="inputId" [type]="type" [name]="name || inputId" [value]="value" [placeholder]="placeholder || ''"
+    title="Input field" [attr.title]="label || placeholder || 'Input field'" [required]="req" [disabled]="disabled"
+    [attr.min]="min ?? null" [attr.max]="max ?? null" [attr.maxlength]="maxlength ?? null"
+    [autocomplete]="autocomplete || null" [ngClass]="inputClasses" [attr.aria-invalid]="currentError ? 'true' : 'false'"
+    [attr.aria-label]="ariaLabel || null" [attr.aria-describedby]="describedBy" (input)="onInput($event)"
+    (blur)="onBlur()" />
+
+  @if(currentError) {
+  <p [id]="inputId + '-error'" class="mt-2 text-sm text-red-600 font-medium" role="alert">
+    {{ currentError }}
+  </p>
+  }
+
+  @if(helperText && !currentError) {
+  <p [id]="inputId + '-helper'" class="mt-2 text-sm text-gray-500">
+    {{ helperText }}
+  </p>
+  }
+</div>

@@ -1,0 +1,63 @@
+<app-layout>
+  <div class="space-y-6 max-w-3xl">
+    <header>
+      <app-button variant="ghost" size="sm" (click)="navigateToBooks()" className="mb-4">
+        <lucide-icon [img]="iconArrowLeft" [size]="16" aria-hidden="true"></lucide-icon>
+        Voltar para o catálogo
+      </app-button>
+      <h1 class="text-3xl font-bold text-foreground mb-2">Cadastrar Novo Livro</h1>
+      <p class="text-[#718096]">Preencha os dados do livro para adicionar ao acervo</p>
+    </header>
+
+    <!-- React-only original: {success && (<Alert ... />)} -->
+    @if (success) {
+    <app-alert variant="success" title="Livro cadastrado com sucesso!">
+      Redirecionando para o catálogo...
+    </app-alert>
+    }
+
+    <app-card padding="lg">
+      <form (submit)="handleSubmit($event)" class="space-y-6">
+        <fieldset>
+          <legend class="text-lg font-semibold text-foreground mb-4">
+            Informações do Livro
+          </legend>
+
+          <div class="space-y-4">
+            <app-input label="Título do Livro" name="title" [(ngModel)]="formData.title"
+              placeholder="Digite o título completo" [req]="true" [disabled]="success"></app-input>
+
+            <app-input label="Autor" name="author" [(ngModel)]="formData.author" placeholder="Nome do autor"
+              [req]="true" [disabled]="success"></app-input>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <app-input label="ISBN" name="isbn" [(ngModel)]="formData.isbn" placeholder="978-XXXXXXXXXX"
+                helperText="Código internacional do livro" [req]="true" [disabled]="success"></app-input>
+
+              <app-input label="Ano de Publicação" name="year" type="number" [(ngModel)]="formData.year" [min]="1000"
+                [max]="currentYear" [req]="true" [disabled]="success"></app-input>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <app-select label="Gênero" name="genre" [(ngModel)]="formData.genre" [options]="genreOptions"
+                [disabled]="success"></app-select>
+
+              <app-input label="Número de Exemplares" name="copies" type="number" [(ngModel)]="formData.copies"
+                [min]="1" [max]="100" helperText="Quantidade de cópias disponíveis" [req]="true"
+                [disabled]="success"></app-input>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="flex gap-4 pt-4 border-t border-border">
+          <app-button type="button" variant="outline" (click)="navigateToBooks()" [disabled]="success">
+            Cancelar
+          </app-button>
+          <app-button type="submit" variant="primary" [disabled]="success">
+            {{ success ? 'Salvando...' : 'Cadastrar Livro' }}
+          </app-button>
+        </div>
+      </form>
+    </app-card>
+  </div>
+</app-layout>

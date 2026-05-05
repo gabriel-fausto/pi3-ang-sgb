@@ -1,0 +1,161 @@
+<app-layout>
+  <div class="space-y-6 max-w-4xl">
+    <header>
+      <h1 class="text-3xl font-bold text-foreground mb-2">Registrar Devolução</h1>
+      <p class="text-[#718096]">
+        Localize o empréstimo ativo e registre a devolução do livro
+      </p>
+    </header>
+
+    @if (success()) {
+    <app-alert variant="success" title="Devolução registrada com sucesso!">
+      O livro foi devolvido e está novamente disponível no acervo.
+    </app-alert>
+    }
+
+    @if (!success()) {
+    <div class="space-y-6">
+      <!-- Search Section -->
+      <section aria-labelledby="search-section">
+        <app-card>
+          <app-card-header>
+            <app-card-title id="search-section">Buscar Empréstimo Ativo</app-card-title>
+          </app-card-header>
+          <app-card-content>
+            <div class="space-y-4">
+              <div class="relative">
+                <lucide-icon [img]="iconSearch"
+                  class="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#718096]" [size]="20"
+                  aria-hidden="true"></lucide-icon>
+                <app-input type="search" placeholder="Pesquisar por título do livro, ISBN ou código do empréstimo..."
+                  [value]="bookSearch()" (valueChange)="updateBookSearch($event)" className="pl-10"
+                  ariaLabel="Pesquisar empréstimo"></app-input>
+              </div>
+
+              @if (bookSearch() && filteredLoans().length === 0) {
+              <p class="text-[#718096] text-center py-4">
+                Nenhum empréstimo ativo encontrado
+              </p>
+              }
+
+              @if (bookSearch() && filteredLoans().length > 0 && !selectedLoan()) {
+              <div class="space-y-2 max-h-96 overflow-y-auto">
+                @for (loan of filteredLoans(); track loan.id) {
+                <button type="button" (click)="selectLoan(loan.id)"
+                  class="w-full p-4 border border-border rounded-md hover:bg-muted text-left transition-colors">
+                  <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                      <p class="font-semibold text-foreground">{{ getBookById(loan.bookId)?.title }}</p>
+                      <p class="text-sm text-[#718096] mt-1">
+                        Leitor: {{ getUserById(loan.userId)?.name }}
+                      </p>
+                      <p class="text-sm text-[#718096]">
+                        ISBN: {{ getBookById(loan.bookId)?.isbn }} | Código: {{ loan.id }}
+                      </p>
+                      <p class="text-sm text-[#718096]">
+                        Empréstimo: {{ formatDate(loan.loanDate) }} |
+                        Devolução: {{ formatDate(loan.dueDate) }}
+                      </p>
+                    </div>
+                    <div class="flex flex-col gap-1 items-end">
+                      @if (isOverdue(loan)) {
+                      <app-badge variant="error">Atrasado</app-badge>
+                      <app-badge variant="warning">Multa: R$ {{ getLoanFine(loan).toFixed(2) }}</app-badge>
+                      } @else {
+                      <app-badge variant="success">No Prazo</app-badge>
+                      }
+                    </div>
+                  </div>
+                </button>
+                }
+              </div>
+              }
+            </div>
+          </app-card-content>
+        </app-card>
+      </section>
+
+      <!-- Return Confirmation -->
+      @if (selectedLoan() && selectedBook() && selectedUser()) {
+      <form (submit)="handleReturn($event)">
+        <section aria-labelledby="return-section">
+          <app-card>
+            <app-card-header>
+              <app-card-title id="return-section">Confirmar Devolução</app-card-title>
+            </app-card-header>
+            <app-card-content>
+              <div class="space-y-6">
+                <!-- Loan Details -->
+                <div class="p-4 bg-[#EDF2F7] rounded-md space-y-3">
+                  <div>
+                    <p class="text-sm font-semibold text-foreground mb-2">
+                      Dados do Empréstimo:
+                    </p>
+                    <p class="text-sm text-[#718096]">
+                      <strong>Livro:</strong> {{ selectedBook()!.title }}
+                    </p>
+                    <p class="text-sm text-[#718096]">
+                      <strong>Leitor:</strong> {{ selectedUser()!.name }}
+                    </p>
+                    <p class="text-sm text-[#718096]">
+                      <strong>Data de Empréstimo:</strong>
+                      {{ formatDate(selectedLoan()!.loanDate) }}
+                    </p>
+                    <p class="text-sm text-[#718096]">
+                      <strong>Data de Devolução Prevista:</strong>
+                      {{ formatDate(selectedLoan()!.dueDate) }}
+                    </p>
+                    <p class="text-sm text-[#718096]">
+                      <strong>Data de Devolução Efetiva:</strong>
+                      {{ formatDate(today) }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Fine Information -->
+                @if (fine() > 0) {
+                <app-alert variant="warning" title="Atenção: Devolução em Atraso">
+                  <div class="space-y-2">
+                    <div class="flex items-center gap-2">
+                      <lucide-icon [img]="iconAlertCircle" [size]="20" aria-hidden="true"></lucide-icon>
+                      <p>
+                        Este empréstimo está <strong>{{ daysLate() }} dia(s)</strong> atrasado.
+                      </p>
+                    </div>
+                    <p class="text-lg font-bold">
+                      Multa a ser paga: R$ {{ fine().toFixed(2) }}
+                    </p>
+                    <p class="text-sm">
+                      Valor da multa: R$ 3,00 por dia de atraso
+                    </p>
+                  </div>
+                </app-alert>
+                } @else {
+                <app-alert variant="success" title="Devolução no Prazo">
+                  <p>Este livro está sendo devolvido dentro do prazo. Não há multas.</p>
+                </app-alert>
+                }
+
+                <!-- Actions -->
+                <div class="flex gap-4 pt-4 border-t border-border">
+                  <app-button type="button" variant="outline" (click)="clearSelectedLoan()">
+                    Cancelar
+                  </app-button>
+                  <app-button type="submit" variant="primary" className="flex-1">
+                    <lucide-icon [img]="iconCheckCircle" [size]="20" aria-hidden="true"></lucide-icon>
+                    Confirmar Devolução
+                    @if (fine() > 0) {
+                    <span> e Gerar Multa</span>
+                    }
+                  </app-button>
+                </div>
+              </div>
+            </app-card-content>
+          </app-card>
+        </section>
+      </form>
+      }
+    </div>
+    }
+  </div>
+</app-layout>

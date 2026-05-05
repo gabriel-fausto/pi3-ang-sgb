@@ -1,0 +1,141 @@
+<app-layout>
+  <div class="space-y-8">
+    <!-- Hero Header -->
+    <header
+      class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950 p-8 lg:p-12 shadow-xl">
+      <div class="absolute inset-0 opacity-10">
+        <!-- React-only original: ImageWithFallback -->
+        <!-- Mantido como comentário para decisão futura sem perder referência -->
+        <!-- <ImageWithFallback ... /> -->
+        <img [src]="heroImageUrl" alt="Biblioteca" class="w-full h-full object-cover" />
+      </div>
+      <div class="relative z-10 text-white">
+        <div class="flex items-center gap-3 mb-4">
+          <lucide-icon [img]="iconSparkles" [size]="32" class="text-white"></lucide-icon>
+          <h1 class="text-4xl font-extrabold text-white">
+            {{ welcomeTitle }}
+          </h1>
+        </div>
+        <p class="text-xl text-white">
+          {{ welcomeMessage }}
+        </p>
+      </div>
+    </header>
+
+    <!-- Admin Dashboard -->
+    <section *ngIf="isAdmin()" aria-labelledby="statistics-heading">
+      <h2 id="statistics-heading" class="sr-only">
+        Estatísticas da Biblioteca
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <app-stat-card title="Total de Livros" [value]="totalBooks" [description]="availableBooksDescription"
+          [icon]="iconBookOpen" iconColor="text-primary"></app-stat-card>
+
+        <app-stat-card title="Empréstimos Ativos" [value]="activeLoans" description="Em posse de leitores"
+          [icon]="iconBookCopy" iconColor="text-[#3182CE]"></app-stat-card>
+
+        <app-stat-card title="Empréstimos Atrasados" [value]="overdueLoans" description="Requerem atenção"
+          [icon]="iconAlertCircle" iconColor="text-[#E53E3E]"></app-stat-card>
+
+        <app-stat-card title="Reservas Ativas" [value]="activeReservations" description="Na fila de espera"
+          [icon]="iconUsers" iconColor="text-accent"></app-stat-card>
+      </div>
+    </section>
+
+    <!-- User's Active Loans -->
+    <section aria-labelledby="loans-heading">
+      <app-card className="overflow-hidden">
+        <app-card-header className="bg-gradient-to-r bg-gray-100 border-b border-gray-200">
+          <app-card-title id="loans-heading" className="flex items-center gap-2 text-gray-900">
+            <lucide-icon [img]="iconBookCopy" [size]="24"></lucide-icon>
+            {{ loansHeading }}
+          </app-card-title>
+        </app-card-header>
+        <app-card-content className="p-6">
+          <div *ngIf="displayedLoans().length === 0; else loansList" class="text-center py-12">
+            <lucide-icon [img]="iconBookOpen" [size]="48" class="mx-auto text-gray-300 mb-4"></lucide-icon>
+            <p class="text-gray-500">
+              {{ emptyLoansMessage }}
+            </p>
+          </div>
+
+          <ng-template #loansList>
+            <div class="space-y-4">
+              <div *ngFor="let loan of displayedLoans(); trackBy: trackByLoanId"
+                class="flex items-center justify-between p-5 border border-gray-200 rounded-xl bg-gradient-to-r from-white to-gray-50 hover:shadow-md transition-shadow">
+                <div class="flex-1">
+                  <p class="font-bold text-gray-900 text-lg">{{ getBookById(loan.bookId)?.title }}</p>
+                  <p *ngIf="isAdmin()" class="text-sm text-gray-600 mt-1">
+                    Leitor: {{ getLoanUser(loan.userId)?.name }}
+                  </p>
+                  <p class="text-sm text-gray-500 mt-1">
+                    Devolução: {{ formatDate(loan.dueDate) }}
+                  </p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <app-badge *ngIf="loan.status === 'ativo'" variant="info">Ativo</app-badge>
+                  <app-badge *ngIf="loan.status === 'atrasado'" variant="error">Atrasado</app-badge>
+                  <app-badge *ngIf="loan.status === 'devolvido'" variant="success">Devolvido</app-badge>
+                  <app-badge *ngIf="loan.fine && loan.fine > 0" variant="warning">
+                    Multa: R$ {{ formatFine(loan.fine) }}
+                  </app-badge>
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </app-card-content>
+      </app-card>
+    </section>
+
+    <!-- User's Active Reservations -->
+    <section *ngIf="!isAdmin() && userReservations().length > 0" aria-labelledby="reservations-heading">
+      <app-card className="overflow-hidden">
+        <app-card-header className="bg-gradient-to-r bg-gray-100 border-b border-gray-200">
+          <app-card-title id="reservations-heading" className="flex items-center gap-2 text-gray-900">
+            <lucide-icon [img]="iconUsers" [size]="24"></lucide-icon>
+            Minhas Reservas
+          </app-card-title>
+        </app-card-header>
+        <app-card-content className="p-6">
+          <div class="space-y-4">
+            <div *ngFor="let reservation of userReservations(); trackBy: trackByReservationId"
+              class="flex items-center justify-between p-5 border border-gray-200 rounded-xl bg-gradient-to-r from-white to-gray-50 hover:shadow-md transition-shadow">
+              <div class="flex-1">
+                <p class="font-bold text-gray-900 text-lg">{{ getBookById(reservation.bookId)?.title }}</p>
+                <p class="text-sm text-gray-500 mt-1">
+                  Reservado em: {{ formatDate(reservation.reservationDate) }}
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <app-badge variant="info">Posição {{ reservation.position }}</app-badge>
+                <app-badge *ngIf="reservation.status === 'ativa'" variant="default">Ativa</app-badge>
+              </div>
+            </div>
+          </div>
+        </app-card-content>
+      </app-card>
+    </section>
+
+    <!-- Alerts for overdue books (Admin) -->
+    <section *ngIf="isAdmin() && overdueLoans > 0" aria-labelledby="alerts-heading">
+      <app-card className="border-2 border-red-200 bg-gradient-to-r from-red-50 to-orange-50">
+        <app-card-header>
+          <app-card-title id="alerts-heading" className="text-red-600 flex items-center gap-2">
+            <lucide-icon [img]="iconAlertCircle" [size]="24" aria-hidden="true"></lucide-icon>
+            Atenção: Livros em Atraso
+          </app-card-title>
+        </app-card-header>
+        <app-card-content>
+          <p class="text-gray-700">
+            Existem <span class="font-bold text-red-600">{{ overdueLoans }}</span> empréstimo(s) com data de devolução
+            vencida. Realize o
+            contato com os leitores para regularização.
+          </p>
+        </app-card-content>
+      </app-card>
+    </section>
+  </div>
+</app-layout>
+
+<!-- React-only original: ImageWithFallback foi substituido por <img> para manter a estrutura visual no Angular -->
+<!-- React-only original: map/condicionais JSX foram migrados para *ngFor e *ngIf -->

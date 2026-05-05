@@ -1,0 +1,7 @@
+<a data-slot="breadcrumb-link" title="Breadcrumb link" [attr.title]="title" [ngClass]="classes" [href]="href || null">
+    <ng-content></ng-content>
+</a>
+
+<!-- React-only original: asChild com Slot de @radix-ui/react-slot nao possui equivalente direto 1:1 em Angular -->
+<!-- React-only original: o componente continua renderizando como anchor mesmo quando asChild=true -->
+<!-- React-only original: props spread do React nao possui equivalente direto no template Angular -->

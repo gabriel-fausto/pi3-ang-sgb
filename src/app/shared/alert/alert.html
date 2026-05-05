@@ -1,0 +1,17 @@
+<div [ngClass]="classes" role="alert">
+  <div class="flex-shrink-0">
+    <!-- React-only original: lucide-react icons CheckCircle, XCircle, AlertTriangle, Info -->
+    <lucide-icon [img]="icon" [size]="20"></lucide-icon>
+  </div>
+  <div class="flex-1">
+    @if (title) {
+    <p class="font-bold mb-1">{{ title }}</p>
+    }
+    <div class="text-sm font-medium">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</div>
+
+<!-- React-only original: className={cn(...)} foi migrado para [ngClass] com montagem no alert.ts -->
+<!-- React-only original: {children} virou <ng-content></ng-content> -->

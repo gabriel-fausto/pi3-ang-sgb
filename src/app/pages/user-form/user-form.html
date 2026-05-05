@@ -1,0 +1,81 @@
+<app-layout>
+  <div class="space-y-6 max-w-3xl">
+    <header>
+      <app-button variant="ghost" size="sm" (click)="navigateToUsers()" className="mb-4">
+        <lucide-icon [img]="iconArrowLeft" [size]="16" aria-hidden="true"></lucide-icon>
+        Voltar para usuários
+      </app-button>
+      <h1 class="text-3xl font-bold text-foreground mb-2">Cadastrar Novo Usuário</h1>
+      <p class="text-[#718096]">
+        Preencha os dados para registrar um novo usuário no sistema
+      </p>
+    </header>
+
+    @if (success) {
+    <app-alert variant="success" title="Usuário cadastrado com sucesso!">
+      Redirecionando para a lista de usuários...
+    </app-alert>
+    }
+
+    <app-card padding="lg">
+      <form (submit)="handleSubmit($event)" class="space-y-6">
+        <fieldset>
+          <legend class="text-lg font-semibold text-foreground mb-4">
+            Dados Pessoais
+          </legend>
+
+          <div class="space-y-4">
+            <app-input label="Nome Completo" [value]="formData.name" (valueChange)="handleChange('name', $event)"
+              placeholder="Digite o nome completo" [req]="true" [disabled]="success" autocomplete="name"></app-input>
+
+            <app-input label="E-mail" type="email" [value]="formData.email"
+              (valueChange)="handleChange('email', $event)" placeholder="usuario@email.com" [req]="true"
+              [disabled]="success" autocomplete="email"></app-input>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <app-input label="CPF" [value]="formData.cpf" (valueChange)="handleChange('cpf', formatCPF($event))"
+                placeholder="000.000.000-00" [maxlength]="14" [req]="true" [disabled]="success"></app-input>
+
+              <app-input label="Telefone" type="tel" [value]="formData.phone"
+                (valueChange)="handleChange('phone', formatPhone($event))" placeholder="(00) 00000-0000"
+                [maxlength]="15" [req]="true" [disabled]="success" autocomplete="tel"></app-input>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend class="text-lg font-semibold text-foreground mb-4">
+            Perfil de Acesso
+          </legend>
+
+          <app-select label="Tipo de Usuário" [value]="formData.role" (valueChange)="handleChange('role', $event)"
+            [options]="roleOptions" [disabled]="success"></app-select>
+
+          <div class="mt-4 p-4 bg-[#EDF2F7] rounded-md">
+            <p class="text-sm text-[#718096]">
+              <strong>Leitor:</strong> Pode visualizar o catálogo, fazer reservas e consultar
+              seus empréstimos.
+            </p>
+            <p class="text-sm text-[#718096] mt-2">
+              <strong>Recepcionista:</strong> Pode realizar empréstimos e devoluções de
+              livros.
+            </p>
+            <p class="text-sm text-[#718096] mt-2">
+              <strong>Bibliotecário:</strong> Acesso completo ao sistema, incluindo gestão de
+              usuários e livros.
+            </p>
+          </div>
+        </fieldset>
+
+        <div class="flex gap-4 pt-4 border-t border-border">
+          <app-button type="button" variant="outline" (click)="navigateToUsers()" [disabled]="success">
+            Cancelar
+          </app-button>
+          <app-button type="submit" variant="primary" [disabled]="success">
+            {{ success ? 'Salvando...' : 'Cadastrar Usuário' }}
+          </app-button>
+        </div>
+      </form>
+    </app-card>
+  </div>
+</app-layout>

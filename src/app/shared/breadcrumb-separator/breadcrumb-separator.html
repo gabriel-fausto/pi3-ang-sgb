@@ -1,0 +1,9 @@
+<li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true" [ngClass]="classes">
+  <ng-content></ng-content>
+  @if (showDefaultIcon) {
+  <lucide-icon [img]="iconChevronRight" [size]="14" aria-hidden="true"></lucide-icon>
+  }
+</li>
+
+<!-- React-only original: children ?? <ChevronRight /> -->
+<!-- React-only original: deteccao automatica de children ausente nao e identica ao React -->

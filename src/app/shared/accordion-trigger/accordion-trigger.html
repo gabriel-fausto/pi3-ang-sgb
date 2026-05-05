@@ -1,0 +1,16 @@
+<div class="flex">
+  <button type="button" data-slot="accordion-trigger" title="Accordion trigger" [ngClass]="classes" [id]="triggerId"
+    [disabled]="isDisabled" [attr.data-state]="isOpen ? 'open' : 'closed'" [attr.data-disabled]="isDisabled ? '' : null"
+    [attr.aria-expanded]="isOpen" [attr.aria-controls]="contentId" (click)="toggle()">
+    <ng-content></ng-content>
+    <!-- React-only original: <ChevronDownIcon className="text-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200" /> -->
+    <span
+      class="text-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200">
+      v
+    </span>
+  </button>
+</div>
+
+<!-- React-only original: <AccordionPrimitive.Header className="flex"> -->
+<!-- React-only original: <AccordionPrimitive.Trigger ... /> -->
+<!-- React-only original: {...props} nao possui equivalente direto no template Angular -->

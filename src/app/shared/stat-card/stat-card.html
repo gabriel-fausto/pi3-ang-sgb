@@ -1,0 +1,40 @@
+<app-card className="relative overflow-hidden group hover:scale-105 transition-transform duration-300">
+  <div
+    class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-gray-200 to-transparent opacity-50 rounded-full -mr-16 -mt-16">
+  </div>
+
+  <app-card-header>
+    <div class="flex items-center justify-between relative z-10">
+      <app-card-title className="text-gray-700">{{ title }}</app-card-title>
+
+      @if (icon) {
+      <div
+        class="p-3 bg-gradient-to-br from-gray-700 to-gray-800 rounded-xl shadow-lg group-hover:shadow-xl transition-shadow">
+        <lucide-icon [img]="icon" [size]="24" class="text-white" aria-hidden="true"></lucide-icon>
+        <!-- React-only original: iconColor existia como prop, mas nao era aplicado no JSX original -->
+      </div>
+      }
+    </div>
+  </app-card-header>
+
+  <app-card-content className="relative z-10">
+    <div class="flex items-end justify-between">
+      <div>
+        <p class="text-4xl font-extrabold bg-gradient-to-r from-gray-800 to-gray-950 bg-clip-text text-transparent">
+          {{ value }}
+        </p>
+
+        @if (description) {
+        <p class="text-sm text-gray-600 mt-2 font-medium">{{ description }}</p>
+        }
+      </div>
+
+      @if (trend) {
+      <div [ngClass]="trendClasses">
+        <span>{{ trendSymbol }}</span>
+        <span>{{ trendValue }}%</span>
+      </div>
+      }
+    </div>
+  </app-card-content>
+</app-card>

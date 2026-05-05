@@ -1,0 +1,12 @@
+<div data-slot="accordion-content"
+  class="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm"
+  [attr.data-state]="isOpen ? 'open' : 'closed'" [hidden]="!isOpen">
+  <div [ngClass]="classes">
+    <ng-content></ng-content>
+  </div>
+</div>
+[id]="contentId"
+
+[attr.data-state]="isOpen ? 'open' : 'closed'"
+[attr.aria-labelledby]="triggerId"
+<!-- React-only original: {...props} nao possui equivalente direto no template Angular -->
