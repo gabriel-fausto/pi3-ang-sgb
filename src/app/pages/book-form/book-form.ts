@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LucideAngularModule, LucideArrowLeft } from 'lucide-angular';
@@ -36,6 +36,7 @@ export class BookForm {
   protected readonly currentYear = new Date().getFullYear();
 
   success = false;
+  error = '';
   formData = {
     title: '',
     author: '',
@@ -45,24 +46,40 @@ export class BookForm {
     copies: '1',
   };
 
-  protected readonly genres = Array.from(
-    new Set(this.booksService.getBooks().map((book) => book.genre)),
+  protected readonly genres = computed(() =>
+    Array.from(new Set(this.booksService.getBooks().map((book) => book.genre))),
   );
 
   protected get genreOptions(): Array<{ value: string; label: string }> {
     return [
-      ...this.genres.map((genre) => ({ value: genre, label: genre })),
+      ...this.genres().map((genre) => ({ value: genre, label: genre })),
       { value: 'Outro', label: 'Outro' },
     ];
   }
 
   handleSubmit(event: Event): void {
     event.preventDefault();
-    this.success = true;
+    this.error = '';
+    this.success = false;
 
-    setTimeout(() => {
-      void this.router.navigate(['/books']);
-    }, 2000);
+    this.booksService.createBook({
+      title: this.formData.title,
+      author: this.formData.author,
+      isbn: this.formData.isbn,
+      genre: this.formData.genre,
+      year: Number(this.formData.year),
+      copies: Number(this.formData.copies),
+    }).subscribe({
+      next: () => {
+        this.success = true;
+        setTimeout(() => {
+          void this.router.navigate(['/books']);
+        }, 2000);
+      },
+      error: () => {
+        this.error = 'Não foi possível cadastrar o livro.';
+      },
+    });
   }
 
   navigateToBooks(): void {

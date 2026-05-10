@@ -44,7 +44,7 @@ export class BooksList {
   protected readonly user = this.authService.userSignal;
   protected readonly searchTerm = signal('');
   protected readonly genreFilter = signal('all');
-  protected readonly books = this.booksService.getBooks();
+  protected readonly books = this.booksService.books;
 
   protected readonly iconSearch = LucideSearch;
   protected readonly iconBookOpen = LucideBookOpen;
@@ -52,12 +52,12 @@ export class BooksList {
   protected readonly coverImageUrl = 'https://images.unsplash.com/photo-1772976811682-465df3b8c735?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2aW50YWdlJTIwYm9vayUyMHNwaW5lJTIwbGlicmFyeXxlbnwxfHx8fDE3NzQ4MjI5ODl8MA&ixlib=rb-4.1.0&q=80&w=1080';
 
   protected readonly isAdmin = computed(() => this.user()?.role === 'bibliotecario');
-  protected readonly genres = Array.from(new Set(this.books.map((book) => book.genre)));
+  protected readonly genres = computed(() => Array.from(new Set(this.books().map((book) => book.genre))));
 
   protected get genreOptions(): Array<{ value: string; label: string }> {
     return [
       { value: 'all', label: 'Todos os gêneros' },
-      ...this.genres.map((genre) => ({ value: genre, label: genre })),
+      ...this.genres().map((genre) => ({ value: genre, label: genre })),
     ];
   }
 
@@ -66,7 +66,7 @@ export class BooksList {
     const normalizedSearchTerm = currentSearchTerm.toLowerCase();
     const currentGenreFilter = this.genreFilter();
 
-    return this.books.filter((book) => {
+    return this.books().filter((book) => {
       const matchesSearch =
         book.title.toLowerCase().includes(normalizedSearchTerm) ||
         book.author.toLowerCase().includes(normalizedSearchTerm) ||

@@ -50,9 +50,9 @@ export class Home {
   private readonly reservationsService = inject(ReservationsService);
 
   protected readonly user = this.authService.userSignal;
-  protected readonly books = this.booksService.getBooks();
-  protected readonly loans = this.loansService.getLoans();
-  protected readonly reservations = this.reservationsService.getReservations();
+  protected readonly books = this.booksService.books;
+  protected readonly loans = this.loansService.loans;
+  protected readonly reservations = this.reservationsService.reservations;
 
   protected readonly iconBookOpen = LucideBookOpen;
   protected readonly iconUsers = LucideUsers;
@@ -78,15 +78,32 @@ export class Home {
   });
 
   protected readonly displayedLoans = computed(() => {
-    return this.isAdmin() ? this.loans.slice(0, 5) : this.userLoans();
+    return this.isAdmin() ? this.loans().slice(0, 5) : this.userLoans();
   });
 
-  protected readonly totalBooks = this.books.length;
-  protected readonly availableBooks = this.books.filter((book) => book.status === 'disponivel').length;
-  protected readonly activeLoans = this.loans.filter((loan) => loan.status === 'ativo').length;
-  protected readonly overdueLoans = this.loans.filter((loan) => loan.status === 'atrasado').length;
-  protected readonly activeReservations = this.reservations.filter((reservation) => reservation.status === 'ativa').length;
-  protected readonly availableBooksDescription = `${this.availableBooks} disponíveis`;
+  protected get totalBooks(): number {
+    return this.books().length;
+  }
+
+  protected get availableBooks(): number {
+    return this.books().filter((book) => book.status === 'disponivel').length;
+  }
+
+  protected get activeLoans(): number {
+    return this.loans().filter((loan) => loan.status === 'ativo').length;
+  }
+
+  protected get overdueLoans(): number {
+    return this.loans().filter((loan) => loan.status === 'atrasado').length;
+  }
+
+  protected get activeReservations(): number {
+    return this.reservations().filter((reservation) => reservation.status === 'ativa').length;
+  }
+
+  protected get availableBooksDescription(): string {
+    return `${this.availableBooks} disponíveis`;
+  }
 
   protected get welcomeTitle(): string {
     const name = this.user()?.name;

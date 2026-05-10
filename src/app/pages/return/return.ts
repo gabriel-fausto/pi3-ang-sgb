@@ -12,6 +12,7 @@ import { Loan } from '../../core/models/loan.model';
 import { User } from '../../core/models/user.model';
 import { BooksService } from '../../core/services/books.service';
 import { LoansService } from '../../core/services/loans.service';
+import { ReservationsService } from '../../core/services/reservations.service';
 import { UsersService } from '../../core/services/users.service';
 import { Alert } from '../../shared/alert/alert';
 import { Badge } from '../../shared/badge/badge';
@@ -46,6 +47,7 @@ export class Return {
   private readonly loansService = inject(LoansService);
   private readonly booksService = inject(BooksService);
   private readonly usersService = inject(UsersService);
+  private readonly reservationsService = inject(ReservationsService);
 
   protected readonly iconSearch = LucideSearch;
   protected readonly iconCheckCircle = LucideCheckCircle;
@@ -56,10 +58,10 @@ export class Return {
   protected readonly selectedLoanId = signal('');
   protected readonly success = signal(false);
 
-  private readonly loans = this.loansService.getLoans();
+  private readonly loans = this.loansService.loans;
 
   protected readonly activeLoans = computed(() =>
-    this.loans.filter((loan) => loan.status === 'ativo' || loan.status === 'atrasado'),
+    this.loans().filter((loan) => loan.status === 'ativo' || loan.status === 'atrasado'),
   );
 
   protected readonly filteredLoans = computed(() => {
@@ -131,11 +133,19 @@ export class Return {
 
     this.success.set(true);
 
-    setTimeout(() => {
-      this.success.set(false);
-      this.selectedLoanId.set('');
-      this.bookSearch.set('');
-    }, 3000);
+    this.loansService.returnLoan(this.selectedLoan()!.id).subscribe({
+      next: () => {
+        this.booksService.refresh();
+        this.loansService.refresh();
+        this.reservationsService.refresh();
+
+        setTimeout(() => {
+          this.success.set(false);
+          this.selectedLoanId.set('');
+          this.bookSearch.set('');
+        }, 3000);
+      },
+    });
   }
 
   protected getBookById(bookId: string): Book | undefined {

@@ -3,6 +3,7 @@ import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { LucideAngularModule, LucideArrowLeft } from 'lucide-angular';
 import { UserRole } from '../../core/models/user.model';
+import { UsersService } from '../../core/services/users.service';
 import { Alert } from '../../shared/alert/alert';
 import { Button } from '../../shared/button/button';
 import { Card } from '../../shared/card/card';
@@ -28,10 +29,12 @@ import { Select } from '../../shared/select/select';
 })
 export class UserForm {
   private readonly router = inject(Router);
+  private readonly usersService = inject(UsersService);
 
   protected readonly iconArrowLeft = LucideArrowLeft;
 
   protected success = false;
+  protected error = '';
   protected formData: {
     name: string;
     email: string;
@@ -54,11 +57,20 @@ export class UserForm {
 
   protected handleSubmit(event: Event): void {
     event.preventDefault();
-    this.success = true;
+    this.error = '';
+    this.success = false;
 
-    setTimeout(() => {
-      void this.router.navigate(['/users']);
-    }, 2000);
+    this.usersService.createUser(this.formData).subscribe({
+      next: () => {
+        this.success = true;
+        setTimeout(() => {
+          void this.router.navigate(['/users']);
+        }, 2000);
+      },
+      error: () => {
+        this.error = 'Não foi possível cadastrar o usuário.';
+      },
+    });
   }
 
   protected navigateToUsers(): void {

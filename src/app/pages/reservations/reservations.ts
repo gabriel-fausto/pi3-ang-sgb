@@ -74,18 +74,16 @@ export class Reservations {
   protected readonly iconBookMarked = LucideBookMarked;
   protected readonly headerImageUrl = 'https://images.unsplash.com/photo-1713891896907-b1ce4ee8c341?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsaWJyYXJ5JTIwcmVzZXJ2YXRpb24lMjBkZXNrJTIwYm9va3MlMjB3YWl0aW5nfGVufDF8fHx8MTc3Njg5NzM3OXww&ixlib=rb-4.1.0&q=80&w=1080';
 
-  protected readonly canceledReservations = signal<string[]>([]);
   protected readonly showCancelSuccess = signal(false);
   protected readonly userSearch = signal('');
   protected readonly bookSearch = signal('');
   protected readonly selectedUserId = signal('');
   protected readonly selectedBookId = signal('');
   protected readonly showFormSuccess = signal(false);
-  protected readonly newReservations = signal<Reservation[]>([]);
 
-  private readonly books = this.booksService.getBooks();
-  private readonly users = this.usersService.getUsers();
-  private readonly baseReservations = this.reservationsService.getReservations();
+  private readonly books = this.booksService.books;
+  private readonly users = this.usersService.users;
+  private readonly baseReservations = this.reservationsService.reservations;
 
   protected readonly user = this.authService.userSignal;
   protected readonly isReceptionist = computed(() => this.user()?.role === 'recepcionista');
@@ -96,19 +94,19 @@ export class Reservations {
 
   protected readonly selectedUser = computed(() => {
     const selectedUserId = this.selectedUserId();
-    return selectedUserId ? this.usersService.getUserById(selectedUserId) ?? null : null;
+    return selectedUserId ? this.users().find((user) => user.id === selectedUserId) ?? null : null;
   });
 
   protected readonly selectedBook = computed(() => {
     const selectedBookId = this.selectedBookId();
-    return selectedBookId ? this.booksService.getBookById(selectedBookId) ?? null : null;
+    return selectedBookId ? this.books().find((book) => book.id === selectedBookId) ?? null : null;
   });
 
   protected readonly availableUsers = computed(() => {
     const searchTerm = this.userSearch().toLowerCase();
     const rawSearchTerm = this.userSearch();
 
-    return this.users.filter(
+    return this.users().filter(
       (user) =>
         user.role === 'leitor' &&
         user.status === 'ativo' &&
@@ -122,17 +120,14 @@ export class Reservations {
     const searchTerm = this.bookSearch().toLowerCase();
     const rawSearchTerm = this.bookSearch();
 
-    return this.books.filter(
+    return this.books().filter(
       (book) =>
         book.availableCopies === 0 &&
         (book.title.toLowerCase().includes(searchTerm) || book.isbn.includes(rawSearchTerm)),
     );
   });
 
-  protected readonly allReservations = computed(() => [
-    ...this.baseReservations,
-    ...this.newReservations(),
-  ]);
+  protected readonly allReservations = computed(() => this.baseReservations());
 
   protected readonly userReservations = computed(() => {
     const currentUser = this.user();
@@ -146,10 +141,8 @@ export class Reservations {
   });
 
   protected readonly activeReservations = computed(() => {
-    const canceled = this.canceledReservations();
-
     return this.userReservations().filter(
-      (reservation) => !canceled.includes(reservation.id) && reservation.status === 'ativa',
+      (reservation) => reservation.status === 'ativa' || reservation.status === 'disponivel',
     );
   });
 
@@ -235,12 +228,17 @@ export class Reservations {
   }
 
   protected handleCancelReservation(reservationId: string): void {
-    this.canceledReservations.update((current) => [...current, reservationId]);
-    this.showCancelSuccess.set(true);
+    this.reservationsService.cancelReservation(reservationId).subscribe({
+      next: () => {
+        this.booksService.refresh();
+        this.reservationsService.refresh();
+        this.showCancelSuccess.set(true);
 
-    setTimeout(() => {
-      this.showCancelSuccess.set(false);
-    }, 3000);
+        setTimeout(() => {
+          this.showCancelSuccess.set(false);
+        }, 3000);
+      },
+    });
   }
 
   protected handleConfirmReservation(event: Event): void {
@@ -253,25 +251,24 @@ export class Reservations {
       return;
     }
 
-    const newReservation: Reservation = {
-      id: `new-${Date.now()}`,
-      bookId: selectedBookId,
+    this.reservationsService.createReservation({
       userId: selectedUserId,
-      reservationDate: new Date(),
-      status: 'ativa',
-      position: this.activeReservations().filter((reservation) => reservation.bookId === selectedBookId).length + 1,
-    };
+      bookId: selectedBookId,
+    }).subscribe({
+      next: () => {
+        this.booksService.refresh();
+        this.reservationsService.refresh();
+        this.showFormSuccess.set(true);
 
-    this.newReservations.update((current) => [...current, newReservation]);
-    this.showFormSuccess.set(true);
-
-    setTimeout(() => {
-      this.showFormSuccess.set(false);
-      this.userSearch.set('');
-      this.bookSearch.set('');
-      this.selectedUserId.set('');
-      this.selectedBookId.set('');
-    }, 3000);
+        setTimeout(() => {
+          this.showFormSuccess.set(false);
+          this.userSearch.set('');
+          this.bookSearch.set('');
+          this.selectedUserId.set('');
+          this.selectedBookId.set('');
+        }, 3000);
+      },
+    });
   }
 
   protected getBookById(bookId: string): Book | undefined {

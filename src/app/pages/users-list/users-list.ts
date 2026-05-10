@@ -60,7 +60,7 @@ export class UsersList {
   protected readonly roleFilter = signal<'all' | User['role']>('all');
   protected readonly statusFilter = signal<'all' | User['status']>('all');
 
-  private readonly users = this.usersService.getUsers();
+  protected readonly users = this.usersService.users;
 
   protected readonly filteredUsers = computed(() => {
     const searchTerm = this.searchTerm().toLowerCase();
@@ -68,7 +68,7 @@ export class UsersList {
     const roleFilter = this.roleFilter();
     const statusFilter = this.statusFilter();
 
-    return this.users.filter((user) => {
+    return this.users().filter((user) => {
       const matchesSearch =
         user.name.toLowerCase().includes(searchTerm) ||
         user.email.toLowerCase().includes(searchTerm) ||

@@ -11,6 +11,7 @@ import {
 import { Book } from '../../core/models/book.model';
 import { User } from '../../core/models/user.model';
 import { BooksService } from '../../core/services/books.service';
+import { LoansService } from '../../core/services/loans.service';
 import { UsersService } from '../../core/services/users.service';
 import { Alert } from '../../shared/alert/alert';
 import { Badge } from '../../shared/badge/badge';
@@ -44,6 +45,7 @@ import { Layout } from '../../shared/layout/layout';
 export class Loan {
   private readonly booksService = inject(BooksService);
   private readonly usersService = inject(UsersService);
+  private readonly loansService = inject(LoansService);
 
   protected readonly step = signal<'search' | 'confirm' | 'success'>('search');
   protected readonly userSearch = signal('');
@@ -59,23 +61,23 @@ export class Loan {
   protected readonly iconBookOpen = LucideBookOpen;
   protected readonly headerImageUrl = 'https://images.unsplash.com/photo-1600715490141-e00d10cce391?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBsaWJyYXJ5JTIwY2hlY2tvdXQlMjBkZXNrfGVufDF8fHx8MTc3Njg5NzAzNnww&ixlib=rb-4.1.0&q=80&w=1080';
 
-  private readonly books = this.booksService.getBooks();
-  private readonly users = this.usersService.getUsers();
+  private readonly books = this.booksService.books;
+  private readonly users = this.usersService.users;
 
   protected readonly selectedUser = computed(() => {
     const selectedUserId = this.selectedUserId();
-    return selectedUserId ? this.usersService.getUserById(selectedUserId) ?? null : null;
+    return selectedUserId ? this.users().find((user) => user.id === selectedUserId) ?? null : null;
   });
 
   protected readonly selectedBook = computed(() => {
     const selectedBookId = this.selectedBookId();
-    return selectedBookId ? this.booksService.getBookById(selectedBookId) ?? null : null;
+    return selectedBookId ? this.books().find((book) => book.id === selectedBookId) ?? null : null;
   });
 
   protected readonly availableUsers = computed(() => {
     const searchTerm = this.userSearch().toLowerCase();
 
-    return this.users.filter(
+    return this.users().filter(
       (user) =>
         user.role === 'leitor' &&
         user.status === 'ativo' &&
@@ -88,7 +90,7 @@ export class Loan {
   protected readonly availableBooks = computed(() => {
     const searchTerm = this.bookSearch().toLowerCase();
 
-    return this.books.filter(
+    return this.books().filter(
       (book) =>
         book.availableCopies > 0 &&
         (book.title.toLowerCase().includes(searchTerm) || book.isbn.includes(this.bookSearch())),
@@ -134,16 +136,33 @@ export class Loan {
 
   protected handleConfirmLoan(event: Event): void {
     event.preventDefault();
-    this.step.set('success');
+    const selectedUserId = this.selectedUserId();
+    const selectedBookId = this.selectedBookId();
 
-    setTimeout(() => {
-      this.step.set('search');
-      this.userSearch.set('');
-      this.bookSearch.set('');
-      this.selectedUserId.set('');
-      this.selectedBookId.set('');
-      this.dueDate.set(this.createDefaultDueDate());
-    }, 3000);
+    if (!selectedUserId || !selectedBookId) {
+      return;
+    }
+
+    this.loansService.createLoan({
+      userId: selectedUserId,
+      bookId: selectedBookId,
+      dueDate: this.dueDate(),
+    }).subscribe({
+      next: () => {
+        this.booksService.refresh();
+        this.loansService.refresh();
+        this.step.set('success');
+
+        setTimeout(() => {
+          this.step.set('search');
+          this.userSearch.set('');
+          this.bookSearch.set('');
+          this.selectedUserId.set('');
+          this.selectedBookId.set('');
+          this.dueDate.set(this.createDefaultDueDate());
+        }, 3000);
+      },
+    });
   }
 
   protected formatDate(date: Date | string): string {
