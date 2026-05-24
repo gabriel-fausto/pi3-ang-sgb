@@ -107,9 +107,12 @@ export class Return {
       return 0;
     }
 
-    return Math.ceil(
-      (new Date().getTime() - loan.dueDate.getTime()) / (1000 * 60 * 60 * 24),
-    );
+    const today = new Date();
+    const dueDate = new Date(loan.dueDate);
+    const utcToday = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+    const utcDue = Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+
+    return Math.max(0, Math.floor((utcToday - utcDue) / (1000 * 60 * 60 * 24)));
   });
 
   protected updateBookSearch(value: string): void {

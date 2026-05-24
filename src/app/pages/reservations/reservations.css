@@ -1,0 +1,97 @@
+/* Reservations page layout fixes
+   - Apply the correct table layout to the rendered HTML inside the custom components
+   - Keep the parent card width unchanged (100% of its container)
+   - Ensure the header background fills the full width behind the labels
+*/
+
+:root {
+  --reservations-border: #e6e7ea;
+  --reservations-muted: #718096;
+}
+
+app-table {
+  display: block;
+}
+
+app-table table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+/* Thead background should be a single band behind all header cells */
+app-table-header > thead {
+  background-color: #f8fafc;
+}
+
+/* Target the real th/td elements rendered by the shared components */
+app-table table thead th,
+app-table table tbody td {
+  padding: 0.9rem 1rem;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+app-table table thead th {
+  font-weight: 600;
+  color: #2d3748;
+  background: transparent; /* thead already has the band */
+}
+
+app-table table tbody tr {
+  border-bottom: 1px solid var(--reservations-border);
+}
+
+/* Column widths applied to the actual TH/TD elements for consistent alignment */
+app-table table thead th:nth-child(1),
+app-table table tbody td:nth-child(1) {
+  width: 35%;
+}
+app-table table thead th:nth-child(2),
+app-table table tbody td:nth-child(2) {
+  width: 22%;
+}
+app-table table thead th:nth-child(3),
+app-table table tbody td:nth-child(3) {
+  width: 16%;
+}
+app-table table thead th:nth-child(4),
+app-table table tbody td:nth-child(4) {
+  width: 12%;
+}
+app-table table thead th:nth-child(5),
+app-table table tbody td:nth-child(5) {
+  width: 10%;
+}
+app-table table thead th:nth-child(6),
+app-table table tbody td:nth-child(6) {
+  width: 5%;
+}
+
+/* Keep the first column text wrapping but keep vertical alignment centered */
+app-table table tbody td:nth-child(1) {
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Right-align actions column */
+app-table table thead th:last-child,
+app-table table tbody td:last-child {
+  text-align: right;
+}
+
+/* Center badges/buttons inside their cells */
+app-table table tbody td app-badge,
+app-table table tbody td app-button[variant="ghost"],
+app-table table tbody td app-button[variant='ghost'] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+app-card {
+  width: 100%;
+}

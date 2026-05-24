@@ -1,11 +1,11 @@
 export function calculateFine(dueDate: Date): number {
     const today = new Date();
-    const diffTime = today.getTime() - dueDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const due = new Date(dueDate);
 
-    if (diffDays <= 0) {
-        return 0;
-    }
+    const utcToday = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+    const utcDue = Date.UTC(due.getFullYear(), due.getMonth(), due.getDate());
 
-    return diffDays * 3;
+    const diffDays = Math.floor((utcToday - utcDue) / (1000 * 60 * 60 * 24));
+
+    return diffDays > 0 ? diffDays * 3 : 0;
 }
