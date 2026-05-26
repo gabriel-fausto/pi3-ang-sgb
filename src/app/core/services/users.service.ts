@@ -59,4 +59,55 @@ export class UsersService {
       }),
     );
   }
+
+  updateUser(id: string, name: string, email: string): Observable<User> {
+    const user = this.usersState().find((u) => u.id === id);
+    if (!user) {
+      return of();
+    }
+
+    const payload: ApiUserPayload = {
+      nome: name,
+      email: email,
+      cpf: user.cpf,
+      telefone: user.phone,
+      funcaoUsuario: mapUserRoleToApi(user.role),
+      ativo: user.status === 'ativo',
+    };
+
+    return this.http.put<ApiUser>(`${this.apiUrl}/${id}`, payload).pipe(
+      map(mapApiUser),
+      tap((updatedUser) => {
+        this.usersState.update((current) =>
+          current.map((u) => (u.id === id ? updatedUser : u)),
+        );
+      }),
+    );
+  }
+
+  toggleUserStatus(id: string): Observable<User> {
+    const user = this.usersState().find((u) => u.id === id);
+    if (!user) {
+      return of();
+    }
+
+    const newStatus = user.status === 'ativo' ? 'inativo' : 'ativo';
+    const payload: ApiUserPayload = {
+      nome: user.name,
+      email: user.email,
+      cpf: user.cpf,
+      telefone: user.phone,
+      funcaoUsuario: mapUserRoleToApi(user.role),
+      ativo: newStatus === 'ativo',
+    };
+
+    return this.http.put<ApiUser>(`${this.apiUrl}/${id}`, payload).pipe(
+      map(mapApiUser),
+      tap((updatedUser) => {
+        this.usersState.update((current) =>
+          current.map((u) => (u.id === id ? updatedUser : u)),
+        );
+      }),
+    );
+  }
 }

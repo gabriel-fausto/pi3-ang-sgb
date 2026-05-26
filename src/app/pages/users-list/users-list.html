@@ -80,15 +80,17 @@
                   </app-table-cell>
                   <app-table-cell>
                     <div class="flex items-center gap-2">
-                      <app-button variant="ghost" size="sm" [ariaLabel]="'Editar usuário ' + user.name">
+                      <app-button variant="ghost" size="sm" [ariaLabel]="'Editar usuário ' + user.name"
+                        (click)="openEditDialog(user)">
                         <lucide-icon [img]="iconEdit" [size]="16" aria-hidden="true"></lucide-icon>
                       </app-button>
                       <app-button *ngIf="user.status === 'ativo'; else activateUserButton" variant="ghost" size="sm"
-                        [ariaLabel]="'Inativar usuário ' + user.name">
+                        [ariaLabel]="'Inativar usuário ' + user.name" (click)="toggleUserStatus(user)">
                         <lucide-icon [img]="iconUserX" [size]="16" aria-hidden="true"></lucide-icon>
                       </app-button>
                       <ng-template #activateUserButton>
-                        <app-button variant="ghost" size="sm" [ariaLabel]="'Ativar usuário ' + user.name">
+                        <app-button variant="ghost" size="sm" [ariaLabel]="'Ativar usuário ' + user.name"
+                          (click)="toggleUserStatus(user)">
                           <lucide-icon [img]="iconUserCheck" [size]="16" aria-hidden="true"></lucide-icon>
                         </app-button>
                       </ng-template>
@@ -102,4 +104,49 @@
       </app-card>
     </section>
   </div>
+
+  <!-- Edit User Modal -->
+  @if (isEditDialogOpen()) {
+  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <app-card className="w-full max-w-md">
+      <app-card-header>
+        <app-card-title>Editar Usuário</app-card-title>
+      </app-card-header>
+      <app-card-content>
+        <div class="space-y-4">
+          @if (editErrorMessage()) {
+          <app-alert variant="error" title="Erro">
+            {{ editErrorMessage() }}
+          </app-alert>
+          }
+
+          <div>
+            <label for="edit-name" class="text-sm font-medium text-foreground block mb-2">Nome</label>
+            <app-input id="edit-name" type="text" [(ngModel)]="editName" placeholder="Nome completo"
+              [disabled]="isLoadingEdit()"></app-input>
+          </div>
+
+          <div>
+            <label for="edit-email" class="text-sm font-medium text-foreground block mb-2">E-mail</label>
+            <app-input id="edit-email" type="email" [(ngModel)]="editEmail" placeholder="email@example.com"
+              [disabled]="isLoadingEdit()"></app-input>
+          </div>
+
+          <div class="flex gap-3 justify-end pt-4">
+            <app-button variant="outline" (click)="closeEditDialog()" [disabled]="isLoadingEdit()">
+              Cancelar
+            </app-button>
+            <app-button variant="primary" (click)="saveEditUser()" [disabled]="isLoadingEdit()">
+              @if (isLoadingEdit()) {
+              <span>Salvando...</span>
+              } @else {
+              <span>Salvar</span>
+              }
+            </app-button>
+          </div>
+        </div>
+      </app-card-content>
+    </app-card>
+  </div>
+  }
 </app-layout>
